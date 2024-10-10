@@ -34,6 +34,10 @@ export class AuthController {
     try {
       return await this.authService.register(registerDto);
     } catch (error) {
+      if (error.name === 'ValidationError') {
+        // Handle Mongoose validation error
+        throw new BadRequestException(error.message);
+      }
       if (error.code === 11000) {
         // MongoDB duplicate key error
         throw new BadRequestException('Email already exists');

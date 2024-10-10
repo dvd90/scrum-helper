@@ -6,6 +6,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { ProductDocumentsModule } from './product-documents/product-documents.module';
+import { PrdProcessingService } from './services/prd-processing/prd-processing.service';
+import { JiraService } from './services/jira/jira.service';
+import { OpenAiService } from './services/openai/openai.service';
 
 @Module({
   imports: [
@@ -19,10 +23,11 @@ import { AuthModule } from './auth/auth.module';
       }),
       inject: [ConfigService],
     }),
+    ProductDocumentsModule,
     UsersModule,
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, OpenAiService, JiraService, PrdProcessingService],
 })
 export class AppModule {}

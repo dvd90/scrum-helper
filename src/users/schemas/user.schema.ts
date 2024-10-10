@@ -10,7 +10,19 @@ export class User {
   email: string;
 
   @Prop()
-  password?: string;
+  password: string;
+
+  @Prop()
+  openAIKey?: string;
+
+  @Prop()
+  jiraDomain?: string;
+
+  @Prop()
+  jiraEmail?: string;
+
+  @Prop()
+  jiraApiKey?: string;
 
   @Prop()
   googleId?: string;
