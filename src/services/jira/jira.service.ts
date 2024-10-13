@@ -66,7 +66,7 @@ export class JiraService {
     projectKey: string,
     summary: string,
     description: string,
-    epicKey: string,
+    epicKey?: string,
   ): Promise<string> {
     const { jiraDomain } = config;
     const jiraApiUrl = this.makeJiraApiUrl(jiraDomain);
@@ -79,7 +79,33 @@ export class JiraService {
           summary,
           description: this.convertToADF(description),
           issuetype: { name: 'Task' },
-          parent: { key: epicKey },
+          ...(epicKey && { parent: { key: epicKey } }),
+        },
+      },
+      { headers: this.getAuthHeaders(config) },
+    );
+    return response.data.key;
+  }
+
+  async createStory(
+    config: PRDJiraConfig,
+    projectKey: string,
+    summary: string,
+    description: string,
+    epicKey?: string,
+  ): Promise<string> {
+    const { jiraDomain } = config;
+    const jiraApiUrl = this.makeJiraApiUrl(jiraDomain);
+
+    const response = await axios.post(
+      `${jiraApiUrl}/issue`,
+      {
+        fields: {
+          project: { key: projectKey },
+          summary,
+          description: this.convertToADF(description),
+          issuetype: { name: 'Story' },
+          ...(epicKey && { parent: { key: epicKey } }),
         },
       },
       { headers: this.getAuthHeaders(config) },

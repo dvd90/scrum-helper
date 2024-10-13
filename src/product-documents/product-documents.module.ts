@@ -11,7 +11,7 @@ import { OpenAiService } from 'src/services/openai/openai.service';
 import { JiraService } from 'src/services/jira/jira.service';
 import { UsersService } from 'src/users/users.service';
 import { User, UserSchema } from 'src/users/schemas/user.schema';
-import { Task, TaskSchema } from './schemas/task.schema';
+import { Task, TaskSchema } from '../tasks/schemas/task.schema';
 
 @Module({
   imports: [

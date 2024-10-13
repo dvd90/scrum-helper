@@ -10,6 +10,7 @@ import { ProductDocumentsModule } from './product-documents/product-documents.mo
 import { PrdProcessingService } from './services/prd-processing/prd-processing.service';
 import { JiraService } from './services/jira/jira.service';
 import { OpenAiService } from './services/openai/openai.service';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { OpenAiService } from './services/openai/openai.service';
     ProductDocumentsModule,
     UsersModule,
     AuthModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService, OpenAiService, JiraService, PrdProcessingService],
