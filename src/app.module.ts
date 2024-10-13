@@ -11,11 +11,16 @@ import { PrdProcessingService } from './services/prd-processing/prd-processing.s
 import { JiraService } from './services/jira/jira.service';
 import { OpenAiService } from './services/openai/openai.service';
 import { TasksModule } from './tasks/tasks.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
