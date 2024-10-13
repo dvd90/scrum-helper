@@ -13,7 +13,7 @@ export class OpenAiService {
       apiKey: config.openAIKey,
     });
 
-    const prompt = `Given the following Product Requirements Document (PRD), generate a list of Epics and Tasks suitable for creation in Jira. Format the output as a JSON array where each item has a 'type' (either 'Epic' or 'Task'), a 'summary' (a brief title), and a 'description'. Tasks should be associated with their parent Epic.\nPRD Content: ${prdContent}\nPlease provide a structured output that can be easily parsed and sent to the Jira API.`;
+    const prompt = `Given the following Product Requirements Document (PRD), generate a list of Epics and Tasks suitable for creation in Jira. Format the output as a JSON array where each item has a 'type' (either 'Epic' or 'Task' or 'Story'), a 'summary' (a brief title), and a 'description'. Tasks should be associated with their parent Epic.\nPRD Content: ${prdContent}\nPlease provide a structured output that can be easily parsed and sent to the Jira API.`;
 
     try {
       const response = await openai.chat.completions.create({
@@ -22,7 +22,7 @@ export class OpenAiService {
           {
             role: 'system',
             content:
-              'You extract epics and tasks from a PRD into structured JSON data.',
+              'You extract epics, tasks and stories from a PRD into structured JSON data.',
           },
           { role: 'user', content: prompt },
         ],
@@ -44,7 +44,7 @@ export class OpenAiService {
                         description:
                           'Type of the work item, either Epic or Task',
                         type: 'string',
-                        enum: ['Epic', 'Task'],
+                        enum: ['Epic', 'Task', 'Story'],
                       },
                       summary: {
                         description: 'Brief title of the work item',
@@ -56,7 +56,7 @@ export class OpenAiService {
                       },
                       parentEpic: {
                         description:
-                          'For tasks, this references the associated epic',
+                          'For tasks or stories, this references the associated epic',
                         type: 'string',
                         nullable: true,
                       },

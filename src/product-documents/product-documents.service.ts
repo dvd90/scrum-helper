@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { ProductDocument } from './schemas/product-document.schema';
 import { CreateProductDocumentDto } from './dto/create-product-document.dto';
 import { UpdateProductDocumentDto } from './dto/update-product-document.dto';
-import { Task } from './schemas/task.schema';
+import { Task } from '../tasks/schemas/task.schema';
 
 @Injectable()
 export class ProductDocumentsService {
@@ -23,8 +23,8 @@ export class ProductDocumentsService {
     return createdProductDocument.save();
   }
 
-  async findAll(): Promise<ProductDocument[]> {
-    return this.productDocumentModel.find().exec();
+  async findAll(userId: string): Promise<ProductDocument[]> {
+    return this.productDocumentModel.find({ userId }).exec();
   }
 
   async findOne(id: string): Promise<ProductDocument & { tasks: Task[] }> {

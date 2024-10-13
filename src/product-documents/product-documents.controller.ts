@@ -8,6 +8,7 @@ import {
   Delete,
   BadRequestException,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { PrdProcessingService } from 'src/services/prd-processing/prd-processing.service';
 import { ProductDocumentsService } from './product-documents.service';
@@ -47,8 +48,8 @@ export class ProductDocumentsController {
   }
 
   @Get()
-  findAll() {
-    return this.productDocumentService.findAll();
+  findAll(@User() userReq: any) {
+    return this.productDocumentService.findAll(userReq.userId);
   }
 
   @Get(':id')
@@ -72,9 +73,13 @@ export class ProductDocumentsController {
   @Post(':id/process')
   async processPrdAndCreateTickets(
     @Param('id') id: string,
+    @Query('toSync') toSync: string,
     @User() userReq: any,
   ) {
     try {
+      const toSyncFlag =
+        (toSync || '').toString() === 'false' ? false : undefined;
+
       const user = await this.usersService.findOne(userReq.userId);
       if (!user.openAIKey || !user.jiraApiKey || !user.jiraDomain) {
         throw new BadRequestException(
@@ -98,10 +103,13 @@ export class ProductDocumentsController {
         await this.prdProcessingService.processPrdAndCreateTickets(
           config,
           productDocument,
+          toSyncFlag,
         );
 
       // Update the product document with the created tickets
-      await this.productDocumentService.update(id, { jiraSynced: true });
+      await this.productDocumentService.update(id, {
+        jiraSynced: toSyncFlag === false ? false : true,
+      });
 
       return createdTickets;
     } catch (error) {

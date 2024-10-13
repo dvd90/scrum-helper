@@ -26,6 +26,9 @@ export class Task extends Document {
 
   @Prop()
   epicKey: string;
+
+  @Prop({ default: false })
+  jiraSynced: boolean;
 }
 
 export type TaskDocument = Task & Document;
