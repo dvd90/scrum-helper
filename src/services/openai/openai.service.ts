@@ -8,12 +8,13 @@ export class OpenAiService {
   async generateTasksFromPRD(
     config: PRDJiraConfig,
     prdContent: string,
+    removeTasks = true,
   ): Promise<PRDResponse> {
     const openai = new OpenAI({
       apiKey: config.openAIKey,
     });
 
-    const prompt = `Given the following Product Requirements Document (PRD), generate a list of Epics and Tasks suitable for creation in Jira. Format the output as a JSON array where each item has a 'type' (either 'Epic' or 'Task' or 'Story'), a 'summary' (a brief title), and a 'description'. Tasks should be associated with their parent Epic.\nPRD Content: ${prdContent}\nPlease provide a structured output that can be easily parsed and sent to the Jira API.`;
+    const prompt = `Given the following Product Requirements Document (PRD), generate a list of Epics, Stories${removeTasks ? '' : ' and Tasks '}suitable for creation in Jira. Format the output as a JSON array where each item has a 'type' (either 'Epic'${removeTasks ? '' : " or 'Task' "}or 'Story'), a 'summary' (a brief title), and a 'description'. Stories${removeTasks ? '' : ' or Tasks'} should be associated with their parent Epic.\nPRD Content: ${prdContent}\nPlease provide a structured output that can be easily parsed and sent to the Jira API.`;
 
     try {
       const response = await openai.chat.completions.create({
@@ -42,7 +43,7 @@ export class OpenAiService {
                     properties: {
                       type: {
                         description:
-                          'Type of the work item, either Epic or Task',
+                          'Type of the work item, either Epic or Story or Task',
                         type: 'string',
                         enum: ['Epic', 'Task', 'Story'],
                       },
@@ -57,6 +58,12 @@ export class OpenAiService {
                       parentEpic: {
                         description:
                           'For tasks or stories, this references the associated epic',
+                        type: 'string',
+                        nullable: true,
+                      },
+                      parentStory: {
+                        description:
+                          'For tasks, this references the associated story',
                         type: 'string',
                         nullable: true,
                       },

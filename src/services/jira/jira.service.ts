@@ -84,6 +84,7 @@ export class JiraService {
       },
       { headers: this.getAuthHeaders(config) },
     );
+
     return response.data.key;
   }
 

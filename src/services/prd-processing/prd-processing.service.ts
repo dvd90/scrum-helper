@@ -25,9 +25,12 @@ export class PrdProcessingService {
       const generatedTasks: PRDResponse =
         await this.openAiService.generateTasksFromPRD(config, prd.content);
 
+      console.log(generatedTasks);
+
       // Create Jira tickets
       const createdTickets = [];
       const epicMap = new Map<string, string>(); // Map to store Epic summaries and their Jira keys
+      const storyMap = new Map<string, string>();
 
       for (const prdTask of generatedTasks.tasks) {
         if (prdTask.type === 'Epic') {
@@ -59,11 +62,11 @@ export class PrdProcessingService {
             summary: prdTask.summary,
             dbId: epic._id,
           });
-        } else if (prdTask.type === 'Task' || prdTask.type === 'Story') {
-          let jiraTaskKey;
+        } else if (prdTask.type === 'Story') {
+          let jiraStoryKey;
           const epicKey = epicMap.get(prdTask.parentEpic);
           if (toSync) {
-            jiraTaskKey = await this.jiraService.createTask(
+            jiraStoryKey = await this.jiraService.createStory(
               config,
               prd.projectKey,
               prdTask.summary,
@@ -75,7 +78,7 @@ export class PrdProcessingService {
             type: prdTask.type,
             userId: prd.userId,
             productDocumentId: prd._id,
-            key: jiraTaskKey,
+            key: jiraStoryKey,
             projectKey: prd.projectKey,
             summary: prdTask.summary,
             description: prdTask.description,
@@ -83,11 +86,43 @@ export class PrdProcessingService {
             jiraSynced: true,
           });
           await task.save();
+          storyMap.set(prdTask.summary, jiraStoryKey);
+          createdTickets.push({
+            type: prdTask.type,
+            key: jiraStoryKey,
+            summary: prdTask.summary,
+            epicKey,
+            dbId: task._id,
+          });
+        } else if (prdTask.type === 'Task') {
+          let jiraTaskKey;
+          const storyKey = storyMap.get(prdTask.parentEpic);
+          if (toSync) {
+            jiraTaskKey = await this.jiraService.createTask(
+              config,
+              prd.projectKey,
+              prdTask.summary,
+              prdTask.description,
+              storyKey,
+            );
+          }
+          const task = new this.taskModel({
+            type: prdTask.type,
+            userId: prd.userId,
+            productDocumentId: prd._id,
+            key: jiraTaskKey,
+            projectKey: prd.projectKey,
+            summary: prdTask.summary,
+            description: prdTask.description,
+            epicKey: storyKey,
+            jiraSynced: true,
+          });
+          await task.save();
           createdTickets.push({
             type: prdTask.type,
             key: jiraTaskKey,
             summary: prdTask.summary,
-            epicKey,
+            epicKey: storyKey,
             dbId: task._id,
           });
         } else {
@@ -95,9 +130,8 @@ export class PrdProcessingService {
             `Parent Epic "${prdTask.parentEpic}" not found for ${prdTask.type} "${prdTask.summary}"`,
           );
         }
-
-        return createdTickets;
       }
+      return createdTickets;
     } catch (error) {
       console.error('Error processing PRD and creating tickets:', error);
       throw new Error('Failed to process PRD and create tickets');
